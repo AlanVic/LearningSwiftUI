@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct ContentView: View {
+    let currencyCode = FloatingPointFormatStyle<Double>.Currency.currency(code: Locale.current.currencyCode ?? "USD")
     @FocusState private var amountIsFocused: Bool
     @State private var checkAmount = 0.0
     @State private var numberOfPeople = 2
@@ -22,12 +23,16 @@ struct ContentView: View {
         
         return amountPerPerson
     }
+    var tipValue: Double {
+        let tipSelection = Double(tipPercentage)
+        return checkAmount / 100 * tipSelection
+    }
     
     var body: some View {
         NavigationView {
             Form {
                 Section {
-                    TextField("Amount", value: $checkAmount, format: .currency(code: Locale.current.currencyCode ?? "USD"))
+                    TextField("Amount", value: $checkAmount, format: currencyCode)
                         .focused($amountIsFocused)
                         .keyboardType(.decimalPad)
                     Picker("Number of people", selection: $numberOfPeople) {
@@ -39,17 +44,24 @@ struct ContentView: View {
                 
                 Section {
                     Picker("Tip percentage", selection: $tipPercentage) {
-                        ForEach(tipPercentages, id: \.self) {
+                        ForEach(0..<101) {
                             Text($0, format: .percent)
                         }
                     }
-                    .pickerStyle(.segmented)
                 } header: {
                     Text("How much tip do you want to leave?")
                 }
                 
                 Section {
-                    Text(totalPerPerson, format: .currency(code: Locale.current.currencyCode ?? "USD"))
+                    Text(tipValue, format: .currency(code: Locale.current.currencyCode ?? "USD"))
+                } header: {
+                    Text("Amount plus tip value")
+                }
+                
+                Section {
+                    Text(totalPerPerson, format: currencyCode)
+                } header: {
+                    Text("Amount per person")
                 }
             }
             .navigationTitle("WeSplit")
